@@ -5,17 +5,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Web.Http;
 
 namespace MasterDataService.Controllers
 {
     public class TwoFactorController : ApiController
     {
-        public IHttpActionResult GetToken(string token)
+        public HttpResponseMessage GetToken(string token)
         {
             TwoFactorService.TwoFactor_Service service = new TwoFactorService.TwoFactor_Service();
             service.Url = @"http://localhost:7047/DynamicsNAV110/WS/CRONUS%20Danmark%20A%2FS/Page/TwoFactor";
-            NetworkCredential networkCredential = new NetworkCredential(@"UserName", "password");
+            NetworkCredential networkCredential = new NetworkCredential(@"DESKTOP-AOPOAEF\DENNIS", "070886Denz");
             //service.UseDefaultCredentials = true;
             service.Credentials = networkCredential;
             List<TwoFactorService.TwoFactor_Filter> filterArray = new List<TwoFactorService.TwoFactor_Filter>();
@@ -27,7 +28,8 @@ namespace MasterDataService.Controllers
             TwoFactorService.TwoFactor[] list = service.ReadMultiple(filterArray.ToArray(), null, 1);
             if (list.Count() == 0)
             {
-                return NotFound();
+                HttpResponseMessage response2 = Request.CreateResponse(HttpStatusCode.NotFound);
+                return response2;
             }
             TwoFactor twoFactor = new TwoFactor();
             Random random = new Random();
@@ -38,7 +40,9 @@ namespace MasterDataService.Controllers
             twoFactor.UserName = list[0].User_ID;
             twoFactor.SecretToken = list[0].Secret_Token;
             twoFactor.LoginToken = list[0].Login_Token;
-            return Ok(JsonConvert.SerializeObject(twoFactor));
+            HttpResponseMessage response = Request.CreateResponse(HttpStatusCode.OK);
+            response.Content = new StringContent(JsonConvert.SerializeObject(twoFactor), Encoding.UTF8, "application/json");
+            return response;
         }
     }
 }
